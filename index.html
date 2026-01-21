@@ -1,0 +1,116 @@
+/**
+ * BACKGROUND ANIMATION (Particles)
+ */
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+// Adjust canvas size to window
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+window.addEventListener('resize', resize);
+resize();
+
+// Particle Class Definition
+class Particle {
+    constructor() {
+        this.reset();
+    }
+
+    reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 20 + 5;
+        this.speedX = Math.random() * 0.2 - 0.1;
+        this.speedY = Math.random() * 0.2 - 0.1;
+        // Colors from our palette
+        this.color = ['#FFD1DC', '#FFF9C4', '#FFFFFF'][Math.floor(Math.random() * 3)];
+        this.opacity = Math.random() * 0.4;
+    }
+
+    update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+
+        // Reset if out of bounds
+        if (this.x < -50 || this.x > canvas.width + 50 || this.y < -50 || this.y > canvas.height + 50) {
+            this.reset();
+        }
+    }
+
+    draw() {
+        ctx.globalAlpha = this.opacity;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+// Initialize particles
+function init() {
+    particles = [];
+    for (let i = 0; i < 20; i++) {
+        particles.push(new Particle());
+    }
+}
+
+// Animation Loop
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+        p.update();
+        p.draw();
+    });
+    requestAnimationFrame(animate);
+}
+
+// Start Background
+init();
+animate();
+
+
+/**
+ * SMOOTH SCROLLING FOR NAVIGATION
+ */
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        
+        if (targetElement) {
+            window.scrollTo({
+                top: targetElement.offsetTop - 80, // Offset for fixed navbar
+                behavior: 'smooth'
+            });
+        }
+    });
+});
+
+/**
+ * OPTIONAL: Intersection Observer for scroll animations
+ */
+const observerOptions = {
+    threshold: 0.1
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+        }
+    });
+}, observerOptions);
+
+// Select elements to animate on scroll
+document.querySelectorAll('.card-elegant, .timeline-item').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'all 0.6s ease-out';
+    observer.observe(el);
+});
